@@ -17,10 +17,17 @@ class Program
         var userService = new ExternalUserService(apiClient);
 
         var users = await userService.GetAllUsersAsync();
-
-        foreach (var user in users)
+        if (users != null)
         {
-            Console.WriteLine($"{user.id}: {user.first_name} {user.last_name}");
+            foreach (var user in users)
+            {
+
+                Console.WriteLine($"{user.id}: {user.first_name} {user.last_name}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("No users found or there was an error fetching the users.");
         }
     }
 }

@@ -32,16 +32,32 @@ namespace Reqres.Clients
 
         public async Task<User> GetUserByIdAsync(int id)
         {
-            var response = await _httpClient.GetAsync($"users/{id}");
-            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            try
+            {
+                var response = await _httpClient.GetAsync($"users/{id}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Error: {response.StatusCode}. {response.ReasonPhrase}");
+                    return null;
+                }
+
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+                var jsonDoc = JsonDocument.Parse(content);
+                var userElement = jsonDoc.RootElement.GetProperty("data");
+
+                return JsonSerializer.Deserialize<User>(userElement.GetRawText(), _serializerOptions);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Network error: {ex.Message}");
                 return null;
-
-            response.EnsureSuccessStatusCode();
-            var content = await response.Content.ReadAsStringAsync();
-            var jsonDoc = JsonDocument.Parse(content);
-            var userElement = jsonDoc.RootElement.GetProperty("data");
-
-            return JsonSerializer.Deserialize<User>(userElement.GetRawText(), _serializerOptions);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unexpected error: {ex.Message}");
+                return null;
+            }
         }
     }
 }

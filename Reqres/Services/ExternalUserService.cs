@@ -26,17 +26,24 @@ namespace Reqres.Services
             var users = new List<User>();
             int page = 1;
             ApiResponse<User> response;
-
-            do
+            try
             {
-                response = await _apiClient.GetUsersAsync(page);
-                if (response?.Data != null)
-                    users.AddRange(response.Data);
+                do
+                {
+                    response = await _apiClient.GetUsersAsync(page);
+                    if (response?.Data != null)
+                        users.AddRange(response.Data);
 
-                page++;
-            } while (response != null && page <= response.TotalPages);
+                    page++;
+                } while (response != null && page <= response.TotalPages);
 
-            return users;
+                return users;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while retrieving data: {ex.Message}");
+                return null;
+            }
         }
     }
 }
